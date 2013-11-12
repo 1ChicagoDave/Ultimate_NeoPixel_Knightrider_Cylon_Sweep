@@ -2,11 +2,16 @@
 
 // David R Ratliff
 // Oct 27, 2013
-// Modified from "neo_nightrider" found on GitHub - unknown Author
-// Reduced compiled sketch size by almost 1,000 bytes (Only 2800 Bytes)
-// Simplified code a bit, easier to change values now 
+// Modified from my all-red "Ultimate NeoPixel KnightRider_Cylon_Sweep" sketch
+// This generates a sweet Cylon sweep, but randomly assigns a new color value 
+// at each turn-around 
 //    --   (only need to change a few values up top & the rest reference them)
-// Very smooth turn-around and "tail" effects
+// This will work (and was designed for) Adafruit's "Trinket" ATTiny85 Arduino platform
+// Values you need to set/adjust
+//  - PIN - Which pin the NeoPixel strip is connected to
+// -  number of pixels
+// - "maxMod" - larger numbers will offer more variety of random colors
+//   .....but may lead to even dimmer lighting values
 
 #define PIN 0    // Pin that NeoPixel Strip is connected to. I use pin 0 on Adafruit Trinket
 
@@ -22,10 +27,19 @@ int r[arraySize] = {
   25*bright, 20*bright, 10*bright, 4*bright, 2*bright, bright, bright, 0};    
 // Due to logarithmic nature of the human eye, each aditional brightness level should be slightly less than half the previous value for best effect.
 
-// Not (really) used green & blue color values  
-int g0 = 0; 
-int b0 = 0;
+// green color values  
+int g[arraySize] = {
+  25*bright, 20*bright, 10*bright, 4*bright, 2*bright, bright, bright, 0}; 
+// blue color values   
+int b[arraySize] = {
+  25*bright, 20*bright, 10*bright, 4*bright, 2*bright, bright, bright, 0}; 
 
+// color value modifiers
+int modR = 0;
+int modG = 0;
+int modB = 0;
+//  The maximum number you want the color values divided by to create "random" values
+int maxMod = 5;    // the larger number, the dimmer pixels may be
 
 void setup() 
 {
@@ -34,17 +48,19 @@ void setup()
 }
 void loop() 
 {
-  colorWipe(r[0], g0, b0, wait);
+  colorWipe(r[0], g[0], b[0], wait);
+
 }    // end void loop()  
 
 void colorWipe(int R, int G, int B, int wait) 
 {
+    getRandVal(maxMod);    // create color modifiers for this segment
   //    Run lights starting from pixel 0
   for(int i=0; i<strip.numPixels(); i++) 
   {
     for (int q = 0; q <= tailSize; q++)
     {
-      strip.setPixelColor(i-q, r[q], g0, b0);
+      strip.setPixelColor(i-q, (r[q]/modR), (g[q]/modG), (b[q]/modB));
     }    // end for (int q...
     strip.show();
     delay(wait); 
@@ -58,13 +74,14 @@ void colorWipe(int R, int G, int B, int wait)
       int v = ((strip.numPixels()-t)+p);
       if (v > tailSize) v = tailSize;
 
-      strip.setPixelColor(t, r[v], g0, b0);
+      strip.setPixelColor(t, (r[v]/modR), (g[v]/modG), (b[v]/modB));
     }
 
     strip.show();
     // No delay() here. It causes too long of a pause at ends of strip.
   }
 
+    getRandVal(maxMod);    // create color modifiers for this segment
 
 
   //      Run lights back to pixel 0
@@ -72,7 +89,7 @@ void colorWipe(int R, int G, int B, int wait)
   {
     for (int q = 0; q <= tailSize; q++)
     {
-      strip.setPixelColor(i+q, r[q], g0, b0);
+      strip.setPixelColor(i+q, (r[q]/modR), (g[q]/modG), (b[q]/modB));
       // strip.setPixelColor(i+4, r[4], g0, b0);
     }    // end for (int q...  
     strip.show();
@@ -87,7 +104,7 @@ void colorWipe(int R, int G, int B, int wait)
       int v = (t+p);
       if (v > tailSize) v = tailSize;
 
-      strip.setPixelColor(t, r[v], g0, b0);
+      strip.setPixelColor(t, (r[v]/modR), (g[v]/modG), (b[v]/modB));
     }
 
     strip.show();
@@ -95,7 +112,13 @@ void colorWipe(int R, int G, int B, int wait)
 
 }    // end void colorWipe()
 
+void getRandVal(int range)
+{
+  modR = random(1, range);
+  modG = random(1, range);
+  modB = random(1, range);
 
+}    // end void getRandVal
 
 
 
